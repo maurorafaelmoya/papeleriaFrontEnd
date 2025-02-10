@@ -1,10 +1,12 @@
 'use client'
+import { AxiosPapeleria } from '@/axios/ApiUsers'
 import AppBarPage from '@/components/AppBar'
 import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { Alert, Button, Card, CardActions, CardContent, CardHeader, Container, Stack, TextField, Typography } from '@mui/material'
 import { useFormik } from 'formik'
 import Link from 'next/link'
 import React, { useState } from 'react'
+import { useDispatch } from 'react-redux'
 
 const page = () => {
     const [showPassword, setShowPassword] = useState(false);
@@ -20,10 +22,14 @@ const page = () => {
 
         if (!values.email) {
             errors.email = "El correo es requerido";
+        }else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)) {
+            errors.email = 'El correo es invalido';
         }
 
         if (!values.password) {
             errors.password = "La contraseña es requerida";
+        }else if (!/^(?=.*\d)(?=.*[!@#$"%^&*.])(?=.*[a-z])(?=.*[A-Z]).{8,}$/i.test(values.password)) {
+            errors.password = 'La contraseña debe contener 8 caracteres y por lo menos una Mayuscula, una Minuscula, un numero y un caracter especial';
         }
 
         if (!values.repeatpassword) {
@@ -50,11 +56,13 @@ const page = () => {
         },
     });
 
-    const handleSend = (values) =>{
+    const handleSend = async(values) =>{
         setSeverity('success')
         setMessage('Cuenta registrada correctamente');
-
+        const response = await AxiosPapeleria.post('user', values );
+      
         console.log(values)
+        console.log(response)
     }
 
   return (

@@ -17,12 +17,19 @@ const Login = () => {
   const validate = (values) => {
     let errors = {};
 
+
     if (!values.email) {
       errors.email = "El correo es requerido";
+    }else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(values.email)) {
+      errors.email = 'El correo es invalido';
     }
+    
     if (!values.password) {
       errors.password = "La contraseña es requerida";
+    }else if (!/^(?=.*\d)(?=.*[!@#$"%^&*.])(?=.*[a-z])(?=.*[A-Z]).{8,}$/i.test(values.password)) {
+      errors.password = 'La contraseña debe contener 8 caracteres y por lo menos una Mayuscula, una Minuscula, un numero y un caracter especial';
     }
+    
 
     return errors;
   };
@@ -50,7 +57,6 @@ const Login = () => {
 
   return (
     <Container>
-      <AppBarPage/>
       <Card>
         <CardHeader title='Inicia Sesion' subheader='ingresa tu correo y contraseña'/>
         <CardContent>
