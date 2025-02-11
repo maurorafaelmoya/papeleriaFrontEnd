@@ -1,18 +1,33 @@
 "use client";
+import { AxiosPapeleria } from '@/axios/ApiUsers';
 import AppBarPage from '@/components/AppBar'
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { Button, Card, CardActions, CardContent, CardHeader, Container, Stack, TextField } from '@mui/material';
+import { Alert, Button, Card, CardActions, CardContent, CardHeader, Container, Stack, TextField } from '@mui/material';
 import { useFormik }  from 'formik';
 import Link from 'next/link';
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 import { Router } from 'next/router';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 const Login = () => {
 
   const router = useRouter();
 
   const [showPassword, setShowPassword] = useState(false);
+  const [message, setMessage] = useState('');
+  const [severity, setSeverity] = useState('');
+
+  //utilizamos el useEffect para saber si existe un login 
+  useEffect(() => {
+    const token = localStorage.getItem("token") || ""
+
+    //en caso de que exista un logueo no dejamos que vuelva a iniciar sesion
+    if(token){
+      redirect('/dashboard')
+    }
+
+  }, [])
+  
 
   const validate = (values) => {
     let errors = {};
@@ -49,10 +64,28 @@ const Login = () => {
     setShowPassword(!showPassword)
   }
 
-  const handleSend =(values) =>{
-    console.log(values)
-    router.push('/dashboard')
-    
+  const handleSend =async (values) =>{
+
+    try {
+      const response = await AxiosPapeleria.post('user/login', values );
+      console.log(response)
+      
+      if(response.status === 201){
+        localStorage.setItem("token", response.data.data.token);
+        router.push('/dashboard')
+      }else{
+        setMessage(response.message)
+        setSeverity('error')
+      }      
+
+    } catch (error) {
+      setMessage(error.response.data.message)
+      setSeverity('error')
+    }
+
+
+
+
   }
 
   return (
@@ -62,7 +95,8 @@ const Login = () => {
         <CardContent>
           <form onSubmit={formik.handleSubmit}>
             <Stack spacing={2} >
-              <TextField
+            { message===''? null : <Alert severity={severity}> {message} </Alert> } 
+            <TextField
                 id="email"
                 type="email"
                 value={formik.values.email}

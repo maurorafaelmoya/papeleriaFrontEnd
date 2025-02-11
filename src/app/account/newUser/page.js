@@ -5,13 +5,25 @@ import { Visibility, VisibilityOff } from '@mui/icons-material'
 import { Alert, Button, Card, CardActions, CardContent, CardHeader, Container, Stack, TextField, Typography } from '@mui/material'
 import { useFormik } from 'formik'
 import Link from 'next/link'
-import React, { useState } from 'react'
+import { redirect } from 'next/navigation'
+import React, { useEffect, useState } from 'react'
 import { useDispatch } from 'react-redux'
 
 const page = () => {
     const [showPassword, setShowPassword] = useState(false);
     const [message, setMessage] = useState('');
     const [severity, setSeverity] = useState('');
+
+    //utilizamos el useEffect para saber si existe un login 
+     useEffect(() => {
+        const token = localStorage.getItem("token") || ""
+    
+        //en caso de existir un usuario logeado, no le mostramos para crear nuevo usuario
+        if(token){
+          redirect('/dashboard')
+        }
+    
+      }, [])
 
     const validate = (values) => {
         let errors = {};
@@ -57,12 +69,35 @@ const page = () => {
     });
 
     const handleSend = async(values) =>{
-        setSeverity('success')
-        setMessage('Cuenta registrada correctamente');
-        const response = await AxiosPapeleria.post('user', values );
-      
-        console.log(values)
-        console.log(response)
+        setSeverity('')
+        setMessage('');
+
+        try {
+            //realizamos la peticion a la API por medio de Axios
+            const response = await AxiosPapeleria.post('user', values );
+            
+            setSeverity('success')
+            setMessage(response.message);
+
+            //limpiamos el formulario
+            formik.values.name=''
+            formik.values.email=''
+            formik.values.password=''
+            formik.values.repeatpassword=''
+
+        } catch (error) {
+
+            
+            if(error.message==="Network Error"){
+                setSeverity('error')
+                setMessage('Error al crear usuario');    
+            }else{
+                setSeverity('error')
+                setMessage(error.response.data.message);
+            }
+
+            
+        }
     }
 
   return (
