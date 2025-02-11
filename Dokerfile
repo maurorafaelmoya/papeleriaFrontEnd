@@ -1,0 +1,34 @@
+# 1. Usa una imagen de Node.js como base
+FROM node:18-alpine AS builder
+
+# 2. Establece el directorio de trabajo
+WORKDIR /app
+
+# 3. Copia los archivos necesarios
+COPY package.json package-lock.json ./
+
+# 4. Instala las dependencias
+RUN npm install
+
+# 5. Copia el resto del código fuente
+COPY . .
+
+# 6. Construye la aplicación Next.js
+RUN npm run build
+
+# 7. Segundo stage: imagen final para producción
+FROM node:18-alpine
+
+WORKDIR /app
+
+# 8. Copia los archivos del build
+COPY --from=builder /app/package.json ./
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/node_modules ./node_modules
+
+# 9. Exponer el puerto (Next.js corre en el 3000 por defecto)
+EXPOSE 3000
+
+# 10. Comando para ejecutar Next.js
+CMD ["npm", "run", "start"]
