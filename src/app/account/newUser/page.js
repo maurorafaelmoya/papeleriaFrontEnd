@@ -29,7 +29,7 @@ const page = () => {
         let errors = {};
 
         if (!values.name) {
-            errors.name = "El correo es requerido";
+            errors.name = "El nombre es requerido";
         }
 
         if (!values.email) {
@@ -75,9 +75,8 @@ const page = () => {
         try {
             //realizamos la peticion a la API por medio de Axios
             const response = await AxiosPapeleria.post('user', values );
-            
             setSeverity('success')
-            setMessage(response.message);
+            setMessage(response.data.message);
 
             //limpiamos el formulario
             formik.values.name=''
